@@ -15,10 +15,14 @@ pipeline {
         stage('Generate AWS Key Pair') {
             steps {
                 script {
-                    // AWS CLI ile özel workspace adına göre key pair oluştur
+                    // AWS CLI ile özel workspace adına göre key pair oluştur veya varsa adımı atla
                     sh """
-                    aws ec2 create-key-pair --key-name ${params.WORKSPACE}-key --query 'KeyMaterial' --output text --region us-east-1 > ${params.WORKSPACE}-key.pem
-                    chmod 400 ${params.WORKSPACE}-key.pem
+                    if ! aws ec2 describe-key-pairs --key-names ${params.WORKSPACE}-key --region us-east-1 >/dev/null 2>&1; then
+                        aws ec2 create-key-pair --key-name ${params.WORKSPACE}-key --query 'KeyMaterial' --output text --region us-east-1 > ${params.WORKSPACE}-key.pem
+                        chmod 400 ${params.WORKSPACE}-key.pem
+                    else
+                        echo "Key pair ${params.WORKSPACE}-key already exists, skipping creation."
+                    fi
                     """
                 }
             }
