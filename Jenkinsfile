@@ -2,7 +2,7 @@ pipeline {
     agent any
     parameters {
         choice(name: 'WORKSPACE', choices: ['dev', 'staging', 'prod', 'test'], description: 'Terraform workspace seçiniz')
-        booleanParam(name: 'DESTROY', defaultValue: true, description: 'Kaynakları silmek istiyor musunuz?')
+        booleanParam(name: 'DESTROY', defaultValue: false, description: 'Kaynakları silmek istiyor musunuz?')
     }
     stages {
         stage('Set Workspace') {
