@@ -2,6 +2,7 @@ pipeline {
     agent any
     parameters {
         choice(name: 'WORKSPACE', choices: ['dev', 'staging', 'prod', 'test'], description: 'Terraform workspace seçiniz')
+        booleanParam(name: 'DESTROY', defaultValue: true, description: 'Kaynakları silmek istiyor musunuz?')
     }
     stages {
         stage('Set Workspace') {
@@ -12,24 +13,37 @@ pipeline {
             }
         }
         stage('Generate AWS Key Pair') {
+            when {
+                expression { return !params.DESTROY }
+            }
             steps {
                 script {
                     sh """
-                    if ! aws ec2 describe-key-pairs --key-names ${params.WORKSPACE}-key --region us-east-1 >/dev/null 2>&1; then
-                        aws ec2 create-key-pair --key-name ${params.WORKSPACE}-key --query 'KeyMaterial' --output text --region us-east-1 > ${params.WORKSPACE}-key.pem
-                        chmod 400 ${params.WORKSPACE}-key.pem
-                    else
-                        echo "Key pair ${params.WORKSPACE}-key already exists, skipping creation."
-                    fi
+                    aws ec2 create-key-pair --key-name ${params.WORKSPACE}-key --query 'KeyMaterial' --output text --region us-east-1 > ${params.WORKSPACE}-key.pem
+                    chmod 400 ${params.WORKSPACE}-key.pem
                     """
                 }
             }
         }
         stage('Terraform Apply') {
+            when {
+                expression { return !params.DESTROY }
+            }
             steps {
                 script {
                     sh 'terraform init'
                     sh "terraform apply --auto-approve"
+                }
+            }
+        }
+        stage('Terraform Destroy') {
+            when {
+                expression { return params.DESTROY }
+            }
+            steps {
+                script {
+                    sh 'terraform init'
+                    sh "terraform destroy --auto-approve"
                 }
             }
         }
