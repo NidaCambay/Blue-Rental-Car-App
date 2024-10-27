@@ -41,10 +41,6 @@ variable "ins_ami" {}
 
 variable "ins_type" {}
 
-
-variable "volume_size" {}
-
-
 variable "keypair" {}
 
 
@@ -53,9 +49,6 @@ resource "aws_instance" "tfmyec2" {
   instance_type = var.ins_type  #lookup haricinde bu sekilde de kullanilabilir, ornek olmasi icin yaptim
   key_name = var.keypair
   security_groups = [aws_security_group.brc-sg.name]
-  root_block_device {
-    volume_size = var.volume_size
-  }
 
   tags = {
     Name = "${terraform.workspace}-server"
