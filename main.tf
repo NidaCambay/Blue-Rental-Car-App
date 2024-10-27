@@ -38,45 +38,21 @@ resource "aws_security_group" "brc-sg" {
 }
 
 variable "ins_ami" {
-  type = map(string)
-  default = {
-    staging = "ami-0cff7528ff583bf9a"
-    dev     = "ami-06640050dc3f556bb"
-    prod    = "ami-08d4ac5b634553e16"
-    test    = "ami-06b21ccaeff8cd686"
-  }
+  default = default
 }
 
 variable "ins_type" {
-  type = map(string)
-  default = {
-    staging = "t2.nano"
-    dev     = "t2.micro"
-    prod    = "t2.small"
-    test    = "t2.medium"
-  }
+  default = default
 }
 
 
 variable "volume_size" {
-  type = map(string)
-  default = {
-    staging = "10"
-    dev     = "12"
-    prod    = "14"
-    test    = "16"
-  }
+  default = default
 }
 
 
 variable "keypair" {
-  type = map(string)
-  default = {
-    staging = "staging-key"
-    dev     = "dev-key"
-    prod    = "prod-key"
-    test    = "test-key"
-  }
+  default = default
 }
 
 
