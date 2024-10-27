@@ -37,23 +37,15 @@ resource "aws_security_group" "brc-sg" {
     }
 }
 
-variable "ins_ami" {
-  default = default
-}
+variable "ins_ami" {}
 
-variable "ins_type" {
-  default = default
-}
+variable "ins_type" {}
 
 
-variable "volume_size" {
-  default = default
-}
+variable "volume_size" {}
 
 
-variable "keypair" {
-  default = default
-}
+variable "keypair" {}
 
 
 resource "aws_instance" "tfmyec2" {
