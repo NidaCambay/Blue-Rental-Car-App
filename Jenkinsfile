@@ -32,7 +32,7 @@ pipeline {
             steps {
                 script {
                     sh 'terraform init'
-                    sh "terraform apply --auto-approve -var='ins-type=${params.arayuzdekisim}' -var='amin=${params.arayuzdekisim}'"
+                    sh "terraform apply --auto-approve
                 }
             }
         }
