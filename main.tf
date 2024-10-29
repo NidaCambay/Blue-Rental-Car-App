@@ -102,6 +102,6 @@ output "workspace_instance_ip" {
 
 output "instance_id" {
   description = "Public Id"
-  value       = "${terraform.workspace}-instance id: ${aws_instance.tfmyec2.id}"
+  value       = aws_instance.tfmyec2.id
 }
 
