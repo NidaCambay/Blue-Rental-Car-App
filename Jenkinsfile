@@ -20,7 +20,7 @@ pipeline {
                 script {
                     sh """
                     aws ec2 create-key-pair --key-name ${params.WORKSPACE}-key --query 'KeyMaterial' --output text --region us-east-1 > ${params.WORKSPACE}-key.pem
-                    chmod 400 ${params.WORKSPACE}-key.pem
+                    chmod 400 ${WORKSPACE}/${WORKSPACE}-key.pem
                     """
                 }
             }
