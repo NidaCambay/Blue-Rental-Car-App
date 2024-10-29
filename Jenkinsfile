@@ -55,13 +55,8 @@ pipeline {
             }
             steps {
                 script {
-            // Sadece gerçek instance ID değerini almak için terraform output'u kullanıyoruz
             def instanceId = sh(script: "terraform output -raw instance_id", returnStdout: true).trim()
-            
-            // Doğru instance ID'yi bekletiyoruz
             echo "Waiting for instance ${instanceId} to pass status checks..."
-            
-            // Status check'in tamamlanmasını bekliyoruz
             sh """
             aws ec2 wait instance-status-ok --instance-ids ${instanceId} --region us-east-1
             """
@@ -107,7 +102,7 @@ pipeline {
                 sh """
                     export ANSIBLE_HOST_KEY_CHECKING=False
                     export ANSIBLE_PRIVATE_KEY_FILE="/var/lib/jenkins/workspace/${PIPELINE_NAME}/${params.WORKSPACE}-key.pem"
-                    ansible-playbook -i inventory_aws_ec2.yml ${params.WORKSPACE}-playbook.yml -vvv
+                    ansible-playbook -i inventory_aws_ec2.yml ${params.WORKSPACE}-playbook.yml -vv
                 """
             }
         }
