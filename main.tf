@@ -83,7 +83,7 @@ variable "keypair" {
 resource "aws_instance" "tfmyec2" {
   ami = lookup(var.ins-ami, terraform.workspace)
   instance_type = var.ins-type[terraform.workspace]  #lookup haricinde bu sekilde de kullanilabilir, ornek olmasi icin yaptim
-  key_name = "firstkey"
+  key_name = var.keypair[terraform.workspace]
   security_groups = [aws_security_group.brc-sg.name]
   root_block_device {
     volume_size = lookup(var.volume-size, terraform.workspace)
