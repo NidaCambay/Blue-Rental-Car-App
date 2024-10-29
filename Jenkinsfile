@@ -59,7 +59,7 @@ pipeline {
                 sh """
                     export ANSIBLE_HOST_KEY_CHECKING=False
                     export ANSIBLE_PRIVATE_KEY_FILE="/var/lib/jenkins/workspace/BRC-Pipeline/${WORKSPACE}-key.pem"
-                    ansible-playbook -i ./inventory_aws_ec2.yml ./${WORKSPACE}-playbook.yml
+                    ansible-playbook -i inventory_aws_ec2.yml ${WORKSPACE}-playbook.yml
                 """
              }
         }
