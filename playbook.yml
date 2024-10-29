@@ -59,7 +59,7 @@
 
 - name: staging server Django install
   hosts: _staging_server
-  become: yes
+  become: true
   tasks:
     - name: Sistem güncellemesi
       ansible.builtin.yum:
@@ -97,7 +97,7 @@
 
 - name: test server Install Git
   hosts: _test_server
-  become: yes
+  become: true
   tasks:
     - name: Update yum packages
       yum:
@@ -116,8 +116,3 @@
     - name: Show Git version
       debug:
         var: git_version.stdout
-
-
-ansible _staging_server -i inventory_aws_ec2.yml -m shell -a "/home/ec2-user/django_env/bin/python -m django --version"
-ansible _prod_server -i inventory_aws_ec2.yml -m shell -a "docker -v"
-ansible _test_server -i inventory_aws_ec2.yml -m shell -a "git -v"
