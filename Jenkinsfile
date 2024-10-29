@@ -19,7 +19,7 @@ pipeline {
             steps {
                 script {
                     sh """
-                    aws ec2 create-key-pair --key-name ${params.WORKSPACE}-key --query 'KeyMaterial' --output text --region us-east-1 > ${params.WORKSPACE}-key.pem
+                    aws ec2 create-key-pair --key-name ${params.WORKSPACE}-key --query 'KeyMaterial' --output text --region us-east-1 > ${WORKSPACE}-key.pem
                     chmod 400 /var/lib/jenkins/workspace/BRC-Pipeline/${WORKSPACE}-key.pem
                     """
                 }
@@ -48,9 +48,25 @@ pipeline {
                 }
             }
         }
-    
- 
+        
+        stage('Delete AWS Key Pair') {
+            when {
+                expression { return params.DESTROY }
+            }
+            steps {
+                script {
+                    sh """
+                    aws ec2 delete-key-pair --key-name ${params.WORKSPACE}-key --region us-east-1
+                    rm -f /var/lib/jenkins/workspace/BRC-Pipeline/${WORKSPACE}-key.pem
+                    """
+                }
+            }
+        }
+
         stage('Deploy the App') {
+            when {
+                expression { return !params.DESTROY }
+            }
             steps {
                 echo 'Deploy the App'
                 sh 'ls -l'
@@ -65,7 +81,6 @@ pipeline {
         }
     }
 
-        
     post {
         always {
             archiveArtifacts artifacts: '*.pem', fingerprint: true
