@@ -51,20 +51,23 @@ pipeline {
 
         stage('Wait for Instance Status Check') {
             when {
-                expression { return !params.DESTROY }
+               expression { return !params.DESTROY }
             }
             steps {
                 script {
-                    // Instance ID'yi bir çıktı değişkeninden veya Terraform çıktısından almak gerekiyor
-                    def instanceId = sh(script: "terraform output -raw instance_id", returnStdout: true).trim()
-                    echo "Waiting for instance ${instanceId} to pass status checks..."
-
-                    sh """
-                    aws ec2 wait instance-status-ok --instance-ids ${instanceId} --region us-east-1
-                    """
-                }
-            }
+            // Sadece gerçek instance ID değerini almak için terraform output'u kullanıyoruz
+            def instanceId = sh(script: "terraform output -raw instance_id", returnStdout: true).trim()
+            
+            // Doğru instance ID'yi bekletiyoruz
+            echo "Waiting for instance ${instanceId} to pass status checks..."
+            
+            // Status check'in tamamlanmasını bekliyoruz
+            sh """
+            aws ec2 wait instance-status-ok --instance-ids ${instanceId} --region us-east-1
+            """
         }
+    }
+}
 
         stage('Terraform Destroy') {
             when {
