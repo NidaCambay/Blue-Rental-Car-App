@@ -1,0 +1,34 @@
+- name: staging server Django install
+  hosts: _staging_server
+  become: yes
+  tasks:
+    - name: Sistem güncellemesi
+      yum:
+        name: "*"
+        state: latest
+
+    - name: Gerekli paketlerin yüklenmesi
+      yum:
+        name:
+          - python3
+          - python3-pip
+          - git
+        state: present
+
+    - name: Django sanal ortamının oluşturulması
+      command: python3 -m venv /home/ec2-user/django_env
+      args:
+        creates: /home/ec2-user/django_env
+
+    - name: Django'nun yüklenmesi
+      pip:
+        name: django
+        virtualenv: /home/ec2-user/django_env
+
+    - name: Django'nun yüklenip yüklenmediğinin kontrol edilmesi
+      command: /home/ec2-user/django_env/bin/python -m django --version
+      register: django_version
+
+    - name: Django sürümünü yazdır
+      debug:
+        var: django_version.stdout

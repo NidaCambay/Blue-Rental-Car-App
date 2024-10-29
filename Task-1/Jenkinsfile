@@ -36,20 +36,6 @@ pipeline {
                 }
             }
         }
-        
-        stage('Deploy the App') {
-            steps {
-                echo 'Deploy the App'
-                sh 'ls -l'
-                sh 'ansible --version'
-                sh 'ansible-inventory -i inventory_aws_ec2.yml --graph'
-                sh """
-                    ansible-playbook -i ./inventory_aws_ec2.yml ./${WORKSPACE}-playbook.yml
-                """
-             }
-        }
-
-
         stage('Terraform Destroy') {
             when {
                 expression { return params.DESTROY }

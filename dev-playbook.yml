@@ -1,0 +1,21 @@
+- name: dev server Apache install
+  hosts: _dev_server
+  become: true
+  tasks:
+    - name: Apache'yi yükleyin
+      ansible.builtin.yum:
+        name: httpd
+        state: present
+      when: ansible_os_family == "RedHat"
+
+    - name: Apache'yi yükleyin
+      ansible.builtin.apt:
+        name: apache2
+        state: present
+      when: ansible_os_family == "Debian"
+
+    - name: Apache'yi başlatın ve enable edin
+      ansible.builtin.service:
+        name: "{{ 'httpd' if ansible_os_family == 'RedHat' else 'apache2' }}"
+        state: started
+        enabled: true

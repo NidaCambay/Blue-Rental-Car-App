@@ -1,0 +1,21 @@
+- name: test server Install Git
+  hosts: _test_server
+  become: yes
+  tasks:
+    - name: Update yum packages
+      yum:
+        name: "*"
+        state: latest
+
+    - name: Install Git
+      yum:
+        name: git
+        state: present
+
+    - name: Verify Git installation
+      command: git --version
+      register: git_version
+
+    - name: Show Git version
+      debug:
+        var: git_version.stdout

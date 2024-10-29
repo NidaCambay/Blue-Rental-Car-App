@@ -40,10 +40,10 @@ resource "aws_security_group" "brc-sg" {
 variable "ins-ami" {
   type = map(string)
   default = {
-    staging = "ami-06b21ccaeff8cd686"
-    dev     = "ami-0ddc798b3f1a5117e"
-    prod    = "ami-06b21ccaeff8cd686"
-    test    = "ami-0ddc798b3f1a5117e"
+    staging = "ami-0cff7528ff583bf9a"
+    dev     = "ami-06640050dc3f556bb"
+    prod    = "ami-08d4ac5b634553e16"
+    test    = "ami-06b21ccaeff8cd686"
   }
 }
 
@@ -83,7 +83,7 @@ variable "keypair" {
 resource "aws_instance" "tfmyec2" {
   ami = lookup(var.ins-ami, terraform.workspace)
   instance_type = var.ins-type[terraform.workspace]  #lookup haricinde bu sekilde de kullanilabilir, ornek olmasi icin yaptim
-  key_name = "firstkey"
+  key_name = var.keypair[terraform.workspace]
   security_groups = [aws_security_group.brc-sg.name]
   root_block_device {
     volume_size = lookup(var.volume-size, terraform.workspace)
@@ -99,4 +99,7 @@ output "workspace_instance_ip" {
   description = "Public IP"
   value       = "${terraform.workspace}-instance ip: ${aws_instance.tfmyec2.public_ip}"
 }
+
+
+
 
