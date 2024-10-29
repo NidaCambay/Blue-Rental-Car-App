@@ -20,7 +20,7 @@ pipeline {
                 script {
                     sh """
                     aws ec2 create-key-pair --key-name ${params.WORKSPACE}-key --query 'KeyMaterial' --output text --region us-east-1 > ${WORKSPACE}-key.pem
-                    chmod 400 /var/lib/jenkins/workspace/BRC-Pipeline/${WORKSPACE}-key.pem
+                    chmod 400 /var/lib/jenkins/workspace/BRC-Pipeline/${params.WORKSPACE}-key.pem
                     """
                 }
             }
@@ -57,7 +57,7 @@ pipeline {
                 script {
                     sh """
                     aws ec2 delete-key-pair --key-name ${params.WORKSPACE}-key --region us-east-1
-                    rm -f /var/lib/jenkins/workspace/BRC-Pipeline/${WORKSPACE}-key.pem
+                    rm -f /var/lib/jenkins/workspace/BRC-Pipeline/${params.WORKSPACE}-key.pem
                     """
                 }
             }
@@ -74,18 +74,10 @@ pipeline {
                 sh 'ansible-inventory -i inventory_aws_ec2.yml --graph'
                 sh """
                     export ANSIBLE_HOST_KEY_CHECKING=False
-                    export ANSIBLE_PRIVATE_KEY_FILE="/var/lib/jenkins/workspace/BRC-Pipeline/${WORKSPACE}-key.pem"
-                    ansible-playbook -i inventory_aws_ec2.yml ${WORKSPACE}-playbook.yml
+                    export ANSIBLE_PRIVATE_KEY_FILE="/var/lib/jenkins/workspace/BRC-Pipeline/${params.WORKSPACE}-key.pem"
+                    ansible-playbook -i inventory_aws_ec2.yml ${params.WORKSPACE}-playbook.yml
                 """
              }
-        }
-    }
-
-    post {
-        always {
-            archiveArtifacts artifacts: '*.pem', fingerprint: true
-            // Eğer ihtiyacınız yoksa pem dosyalarını silmek için uncomment edin
-            // sh 'rm -f *.pem'
         }
     }
 }
