@@ -48,7 +48,7 @@ pipeline {
                 }
             }
         }
-    }
+    
  
         stage('Deploy the App') {
             steps {
@@ -63,7 +63,7 @@ pipeline {
                 """
              }
         }
-
+    }
 
         
     post {
