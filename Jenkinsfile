@@ -8,6 +8,16 @@ pipeline {
         booleanParam(name: 'DESTROY', defaultValue: false, description: 'Kaynakları silmek istiyor musunuz?')
     }
     stages {
+
+        stage('Print Pipeline Name') {
+            steps {
+                script {
+                    echo "Pipeline Name: ${PIPELINE_NAME}"
+                }
+            }
+        }
+
+
         stage('Set Workspace') {
             steps {
                 script {
@@ -22,7 +32,7 @@ pipeline {
             steps {
                 script {
                     sh """
-                    aws ec2 create-key-pair --key-name ${params.WORKSPACE}-key --query 'KeyMaterial' --output text --region us-east-1 > ${WORKSPACE}/${PIPELINE_NAME}/${params.WORKSPACE}-key.pem
+                    aws ec2 create-key-pair --key-name ${params.WORKSPACE}-key --query 'KeyMaterial' --output text --region us-east-1 > /var/lib/jenkins/workspace/${PIPELINE_NAME}/${params.WORKSPACE}-key.pem
                     chmod 400 /var/lib/jenkins/workspace/${PIPELINE_NAME}/${params.WORKSPACE}-key.pem
                     """
                 }
