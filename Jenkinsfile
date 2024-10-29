@@ -1,5 +1,8 @@
 pipeline {
     agent any
+    environment {
+        PIPELINE_NAME = "${env.JOB_NAME}"
+    }
     parameters {
         choice(name: 'WORKSPACE', choices: ['dev', 'staging', 'prod', 'test'], description: 'Terraform workspace seçiniz')
         booleanParam(name: 'DESTROY', defaultValue: false, description: 'Kaynakları silmek istiyor musunuz?')
@@ -19,8 +22,8 @@ pipeline {
             steps {
                 script {
                     sh """
-                    aws ec2 create-key-pair --key-name ${params.WORKSPACE}-key --query 'KeyMaterial' --output text --region us-east-1 > ${WORKSPACE}-key.pem
-                    chmod 400 /var/lib/jenkins/workspace/BRC-Pipeline/${params.WORKSPACE}-key.pem
+                    aws ec2 create-key-pair --key-name ${params.WORKSPACE}-key --query 'KeyMaterial' --output text --region us-east-1 > ${PIPELINE_NAME}/${params.WORKSPACE}-key.pem
+                    chmod 400 /var/lib/jenkins/workspace/${PIPELINE_NAME}/${params.WORKSPACE}-key.pem
                     """
                 }
             }
@@ -57,7 +60,7 @@ pipeline {
                 script {
                     sh """
                     aws ec2 delete-key-pair --key-name ${params.WORKSPACE}-key --region us-east-1
-                    rm -f /var/lib/jenkins/workspace/BRC-Pipeline/${params.WORKSPACE}-key.pem
+                    rm -f /var/lib/jenkins/workspace/${PIPELINE_NAME}/${params.WORKSPACE}-key.pem
                     """
                 }
             }
@@ -74,10 +77,11 @@ pipeline {
                 sh 'ansible-inventory -i inventory_aws_ec2.yml --graph'
                 sh """
                     export ANSIBLE_HOST_KEY_CHECKING=False
-                    export ANSIBLE_PRIVATE_KEY_FILE="/var/lib/jenkins/workspace/BRC-Pipeline/${params.WORKSPACE}-key.pem"
-                    ansible-playbook -i inventory_aws_ec2.yml ${params.WORKSPACE}-playbook.yml -vvv
+                    export ANSIBLE_PRIVATE_KEY_FILE="/var/lib/jenkins/workspace/${PIPELINE_NAME}/${params.WORKSPACE}-key.pem"
+                    ansible-playbook -i inventory_aws_ec2.yml ${params.WORKSPACE}-playbook.yml
                 """
              }
         }
     }
+
 }
