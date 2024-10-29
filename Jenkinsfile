@@ -36,19 +36,6 @@ pipeline {
                 }
             }
         }
-        
-        stage('Deploy the App') {
-            steps {
-                echo 'Deploy the App'
-                sh 'ls -l'
-                sh 'ansible --version'
-                sh 'ansible-inventory -i inventory_aws_ec2.yml --graph'
-                sh """
-                    ansible-playbook -i ./inventory_aws_ec2.yml ./${WORKSPACE}-playbook.yml
-                """
-             }
-        }
-
 
         stage('Terraform Destroy') {
             when {
@@ -62,6 +49,23 @@ pipeline {
             }
         }
     }
+ 
+        stage('Deploy the App') {
+            steps {
+                echo 'Deploy the App'
+                sh 'ls -l'
+                sh 'ansible --version'
+                sh 'ansible-inventory -i inventory_aws_ec2.yml --graph'
+                sh """
+                    export ANSIBLE_HOST_KEY_CHECKING=False
+                    export ANSIBLE_PRIVATE_KEY_FILE="/var/lib/jenkins/workspace/BRC-Pipeline/${WORKSPACE}-key.pem"
+                    ansible-playbook -i ./inventory_aws_ec2.yml ./${WORKSPACE}-playbook.yml
+                """
+             }
+        }
+
+
+        
     post {
         always {
             archiveArtifacts artifacts: '*.pem', fingerprint: true
