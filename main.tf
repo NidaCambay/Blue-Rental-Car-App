@@ -100,3 +100,8 @@ output "workspace_instance_ip" {
   value       = "${terraform.workspace}-instance ip: ${aws_instance.tfmyec2.public_ip}"
 }
 
+output "instance_id" {
+  description = "Public Id"
+  value       = "${terraform.workspace}-instance id: ${aws_instance.tfmyec2.id}"
+}
+

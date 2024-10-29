@@ -17,7 +17,6 @@ pipeline {
             }
         }
 
-
         stage('Set Workspace') {
             steps {
                 script {
@@ -50,6 +49,23 @@ pipeline {
             }
         }
 
+        stage('Wait for Instance Status Check') {
+            when {
+                expression { return !params.DESTROY }
+            }
+            steps {
+                script {
+                    // Instance ID'yi bir çıktı değişkeninden veya Terraform çıktısından almak gerekiyor
+                    def instanceId = sh(script: "terraform output -raw instance_id", returnStdout: true).trim()
+                    echo "Waiting for instance ${instanceId} to pass status checks..."
+
+                    sh """
+                    aws ec2 wait instance-status-ok --instance-ids ${instanceId} --region us-east-1
+                    """
+                }
+            }
+        }
+
         stage('Terraform Destroy') {
             when {
                 expression { return params.DESTROY }
@@ -61,7 +77,7 @@ pipeline {
                 }
             }
         }
-        
+
         stage('Delete AWS Key Pair') {
             when {
                 expression { return params.DESTROY }
@@ -90,8 +106,7 @@ pipeline {
                     export ANSIBLE_PRIVATE_KEY_FILE="/var/lib/jenkins/workspace/${PIPELINE_NAME}/${params.WORKSPACE}-key.pem"
                     ansible-playbook -i inventory_aws_ec2.yml ${params.WORKSPACE}-playbook.yml -vvv
                 """
-             }
+            }
         }
     }
-
 }
