@@ -1,6 +1,6 @@
 FROM node:16.18
 WORKDIR /app
-COPY package.json ./
+COPY ./bluerentalcars-frontend/package.json ./
 RUN npm install
 COPY . .
 EXPOSE 3000
