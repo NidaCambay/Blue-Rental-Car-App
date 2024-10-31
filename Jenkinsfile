@@ -1,110 +1,102 @@
 pipeline {
     agent any
-    environment {
-        PIPELINE_NAME = "${env.JOB_NAME}"
-    }
+
     parameters {
-        choice(name: 'WORKSPACE', choices: ['dev', 'staging', 'prod', 'test'], description: 'Terraform workspace seçiniz')
-        booleanParam(name: 'DESTROY', defaultValue: false, description: 'Kaynakları silmek istiyor musunuz?')
+        choice(name: 'ENVIRONMENT', choices: ['default', 'test', 'dev', 'staging', 'prod'], description: 'Select the target environment')
+        string(name: 'INSTANCE_TYPE', defaultValue: 't2.micro', description: 'AWS EC2 instance type')
+        string(name: 'INSTANCE_COUNT', defaultValue: '1', description: 'Number of instances to deploy, must be a positive number')
     }
+
+    environment {
+        AWS_REGION= "us-east-1"
+        INSTANCE_COUNT_INT = "${params.INSTANCE_COUNT.toInteger()}"
+    }
+
     stages {
-
-        stage('Print Pipeline Name') {
+        stage('Create Key Pair for AWS instance') {
             steps {
-                script {
-                    echo "Pipeline Name: ${PIPELINE_NAME}"
-                }
-            }
-        }
-
-        stage('Set Workspace') {
-            steps {
-                script {
-                    sh "terraform workspace select ${params.WORKSPACE} || terraform workspace new ${params.WORKSPACE}"
-                }
-            }
-        }
-        stage('Generate AWS Key Pair') {
-            when {
-                expression { return !params.DESTROY }
-            }
-            steps {
-                script {
-                    sh """
-                    aws ec2 create-key-pair --key-name ${params.WORKSPACE}-key --query 'KeyMaterial' --output text --region us-east-1 > /var/lib/jenkins/workspace/${PIPELINE_NAME}/${params.WORKSPACE}-key.pem
-                    chmod 400 /var/lib/jenkins/workspace/${PIPELINE_NAME}/${params.WORKSPACE}-key.pem
-                    """
-                }
-            }
-        }
-        stage('Terraform Apply') {
-            when {
-                expression { return !params.DESTROY }
-            }
-            steps {
-                script {
-                    sh 'terraform init'
-                    sh "terraform apply --auto-approve"
-                }
-            }
-        }
-
-        stage('Wait for Instance Status Check') {
-            when {
-               expression { return !params.DESTROY }
-            }
-            steps {
-                script {
-            def instanceId = sh(script: "terraform output -raw instance_id", returnStdout: true).trim()
-            echo "Waiting for instance ${instanceId} to pass status checks..."
-            sh """
-            aws ec2 wait instance-status-ok --instance-ids ${instanceId} --region us-east-1
-            """
-        }
-    }
-}
-
-        stage('Terraform Destroy') {
-            when {
-                expression { return params.DESTROY }
-            }
-            steps {
-                script {
-                    sh 'terraform init'
-                    sh "terraform destroy --auto-approve"
-                }
-            }
-        }
-
-        stage('Delete AWS Key Pair') {
-            when {
-                expression { return params.DESTROY }
-            }
-            steps {
-                script {
-                    sh """
-                    aws ec2 delete-key-pair --key-name ${params.WORKSPACE}-key --region us-east-1
-                    rm -f /var/lib/jenkins/workspace/${PIPELINE_NAME}/${params.WORKSPACE}-key.pem
-                    """
-                }
-            }
-        }
-
-        stage('Deploy the App') {
-            when {
-                expression { return !params.DESTROY }
-            }
-            steps {
-                echo 'Deploy the App'
-                sh 'ls -l'
-                sh 'ansible --version'
-                sh 'ansible-inventory -i inventory_aws_ec2.yml --graph'
+                echo "Creating Key Pair "
                 sh """
-                    export ANSIBLE_HOST_KEY_CHECKING=False
-                    export ANSIBLE_PRIVATE_KEY_FILE="/var/lib/jenkins/workspace/${PIPELINE_NAME}/${params.WORKSPACE}-key.pem"
-                    ansible-playbook -i inventory_aws_ec2.yml ${params.WORKSPACE}-playbook.yml -vv
+                    aws ec2 create-key-pair --region ${AWS_REGION} --key-name ${ENVIRONMENT} --query KeyMaterial --output text > ${ENVIRONMENT}
+                    chmod 400 ${ENVIRONMENT}
                 """
             }
         }
+
+        stage('Create AWS Resources') {
+            steps {
+                sh """
+                    cd Task-2-Solution/terraform
+                    terraform workspace select ${params.ENVIRONMENT} || terraform workspace new ${params.ENVIRONMENT}
+                    terraform init
+                    terraform apply -var='ec2_type=${params.INSTANCE_TYPE}' \
+                                    -var='num_of_instance=${INSTANCE_COUNT_INT}' \
+                                    -var='ec2_key=${ENVIRONMENT}' \
+                                    -auto-approve
+                """
+            }
+        }
+
+        stage('Wait the instance') {
+            steps {
+                script {
+                    echo 'Waiting for the instance'
+                    id = sh(script: 'aws ec2 describe-instances --filters Name=tag-value,Values="${ENVIRONMENT}_server" Name=instance-state-name,Values=running --query Reservations[*].Instances[*].[InstanceId] --output text',  returnStdout:true).trim()
+                    sh 'aws ec2 wait instance-status-ok --instance-ids $id'
+                }
+            }
+        }
+
+        stage('Configure AWS Instance') {
+            steps {
+                echo 'Configure AWS Instance'
+                sh 'pwd'
+                sh 'ls -l'
+                sh 'ansible --version'
+                sh 'ansible-inventory -i ./Task-2-Solution/ansible/inventory_aws_ec2.yml --graph'
+                sh """
+                    cd Task-2-Solution/ansible
+                    ansible-playbook -i inventory_aws_ec2.yml --private-key=${WORKSPACE}/${ENVIRONMENT} ${ENVIRONMENT}.yml -vv
+                """
+             }
+        }
+
     }
-}
+
+    post {
+        always {
+            echo 'Post Always block'
+        }
+        success {
+            echo 'Delete the Key Pair'
+                timeout(time:5, unit:'DAYS'){
+                input message:'Approve terminate'
+                }
+           sh """
+                aws ec2 delete-key-pair --region ${AWS_REGION} --key-name ${ENVIRONMENT}
+                rm -rf ${ENVIRONMENT}
+                """
+            echo 'Delete AWS Resources'            
+                sh """
+                cd Task-2-Solution/terraform
+                terraform destroy --auto-approve
+                """
+        }
+        failure {
+
+            echo 'Delete the Key Pair'
+            sh """
+                aws ec2 delete-key-pair --region ${AWS_REGION} --key-name ${ENVIRONMENT}
+                rm -rf ${ENVIRONMENT}
+                """
+            echo 'Delete AWS Resources'            
+                sh """
+                cd Task-2-Solution/terraform
+                terraform destroy --auto-approve
+                """
+        }
+    }
+
+
+
+    }
