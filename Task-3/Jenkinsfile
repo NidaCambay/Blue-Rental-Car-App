@@ -1,6 +1,6 @@
 pipeline {
     agent any
-     parameters {
+    parameters {
         choice(name: 'ENVIRONMENT', choices: ['default', 'test', 'dev', 'staging', 'prod'], description: 'Select the target environment')
         string(name: 'INSTANCE_TYPE', defaultValue: 't2.micro', description: 'AWS EC2 instance type')
         string(name: 'INSTANCE_COUNT', defaultValue: '1', description: 'Number of instances to deploy, must be a positive number')
@@ -53,7 +53,6 @@ pipeline {
             }
         }
 
-
         stage('Build App Docker Image') {
             steps {
                 echo 'Building App Image'
@@ -80,18 +79,15 @@ pipeline {
             }
         }
 
-
         stage('wait the instance') {
             steps {
                 script {
                     echo 'Waiting for the instance'
-                    id = sh(script: 'aws ec2 describe-instances --filters Name=tag-value,Values=${ENVIRONMENT}_server Name=instance-state-name,Values=running --query Reservations[*].Instances[*].[InstanceId] --output text',  returnStdout:true).trim()
+                    id = sh(script: 'aws ec2 describe-instances --filters Name=tag-value,Values=${ENVIRONMENT}_server Name=instance-state-name,Values=running --query Reservations[*].Instances[*].[InstanceId] --output text', returnStdout:true).trim()
                     sh 'aws ec2 wait instance-status-ok --instance-ids $id'
                 }
             }
         }
-
-
 
         stage('Deploy the App') {
             steps {
@@ -105,7 +101,7 @@ pipeline {
                     cd Task-3/ansible
                     ansible-playbook -i ./inventory_aws_ec2.yml -e "compose_dir=${params.ENVIRONMENT}" ./prod-playbook.yml
                 """
-             }
+            }
         }
     }
     post {
@@ -114,34 +110,30 @@ pipeline {
         }
         success {
             echo 'Delete the Key Pair'
-                timeout(time:5, unit:'DAYS'){
-                input message:'Approve terminate'
-                }
-           sh """
+            timeout(time: 5, unit: 'DAYS') {
+                input message: 'Approve terminate'
+            }
+            sh """
                 aws ec2 delete-key-pair --region ${AWS_REGION} --key-name ${ENVIRONMENT}
                 rm -rf ${ENVIRONMENT}
-                """
-            echo 'Delete AWS Resources'            
-                sh """
+            """
+            echo 'Delete AWS Resources'
+            sh """
                 cd Task-3/terraform
                 terraform destroy --auto-approve
-                """
+            """
         }
         failure {
-
             echo 'Delete the Key Pair'
             sh """
                 aws ec2 delete-key-pair --region ${AWS_REGION} --key-name ${ENVIRONMENT}
                 rm -rf ${ENVIRONMENT}
-                """
-            echo 'Delete AWS Resources'            
-                sh """
+            """
+            echo 'Delete AWS Resources'
+            sh """
                 cd Task-3/terraform
                 terraform destroy --auto-approve
-                """
+            """
         }
-
-
-
-
     }
+}
