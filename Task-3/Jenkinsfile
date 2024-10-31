@@ -107,6 +107,7 @@ pipeline {
                 """
              }
         }
+    }
     post {
         always {
             echo 'Post Always block'
@@ -139,7 +140,7 @@ pipeline {
                 terraform destroy --auto-approve
                 """
         }
-    }
+
 
 
 
