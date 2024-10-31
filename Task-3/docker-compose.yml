@@ -1,0 +1,46 @@
+version: "3.7"
+services:
+    database:
+        image: "244392073887.dkr.ecr.us-east-1.amazonaws.com/ecr-repo/brc-app:postgre"
+        environment:
+            POSTGRES_USER: techprodb_user
+            POSTGRES_PASSWORD: password
+            POSTGRES_DB: carrental
+        networks:
+            - bcr
+        ports:
+            - "5432:5432"
+        volumes:
+            - brcvol:/var/lib/postgresql/data
+    frontend:
+        image: "244392073887.dkr.ecr.us-east-1.amazonaws.com/ecr-repo/brc-app:frontend"
+        restart: always
+        environment:
+            REACT_APP_API_URL: http://${NODE_IP}:8080/car-rental/api/
+        depends_on:
+            - backend
+            - database
+        ports:
+            - "3000:3000"
+        networks:
+            - bcr
+    backend:
+        image: "244392073887.dkr.ecr.us-east-1.amazonaws.com/ecr-repo/brc-app:backend"
+        restart: always
+        environment:
+            SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/carrental
+            SPRING_DATASOURCE_USERNAME: techprodb_user
+            SPRING_DATASOURCE_PASSWORD: password
+        depends_on:
+            - postgre
+        ports:
+            - "8080:8080"
+        networks:
+            - bcr
+
+networks:
+    bcr:
+        driver: bridge
+
+volumes:
+    bcrvol:
