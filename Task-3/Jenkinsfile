@@ -35,9 +35,6 @@ pipeline {
                                     -var='num_of_instance=${INSTANCE_COUNT_INT}' \
                                     -var='ec2_key=${ENVIRONMENT}' \
                                     -auto-approve
-                    env.NODE_IP = sh(script: 'terraform output -raw public_ip', returnStdout:true).trim()
-                    echo "Public IP: ${env.NODE_IP}"
-                    echo "Public IP: ${NODE_IP}"
                 """
             }
         }
@@ -70,7 +67,11 @@ pipeline {
         stage('Build App Docker Image') {
             steps {
                 echo 'Building App Image'
-                sh ''
+                script {
+                    env.NODE_IP = sh(script: 'terraform output -raw public_ip', returnStdout:true).trim()
+                    echo "Public IP: ${env.NODE_IP}"
+                    echo "Public IP: ${NODE_IP}"
+                }
                 sh 'echo "REACT_APP_API_URL: http://${env.NODE_IP}:8080/car-rental/api/" >> Task-3/bluerentalcars-frontend/.env'
                 sh 'cat ./Task-3/bluerentalcars-frontend/.env'
                 sh 'docker build --force-rm -t "$ECR_REGISTRY/$APP_REPO_NAME:postgre" -f ./Task-3/postgresql/Dockerfile .'
