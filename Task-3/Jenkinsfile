@@ -99,7 +99,7 @@ pipeline {
                     export ANSIBLE_PRIVATE_KEY_FILE="${ENVIRONMENT}/${ANS_KEYPAIR}"
                     export ANSIBLE_HOST_KEY_CHECKING=False
                     cd Task-3/ansible
-                    ansible-playbook -i ./Task-3/ansible/inventory_aws_ec2.yml -e "compose_dir=${params.ENVIRONMENT}" ./prod-playbook.yml
+                    ansible-playbook -i ./inventory_aws_ec2.yml -e "compose_dir=${params.ENVIRONMENT}" ./prod-playbook.yml
                 """
             }
         }
