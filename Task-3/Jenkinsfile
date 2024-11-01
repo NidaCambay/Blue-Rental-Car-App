@@ -70,7 +70,11 @@ pipeline {
                 script {
                     env.NODE_IP = sh(script: 'terraform output -raw public_ip', returnStdout:true).trim()
                 }
-                sh 'echo ${NODE_IP}'
+                sh '''
+                    cd Task-3/terraform
+                    echo ${NODE_IP}
+                    echo "REACT_APP_API_URL: http://${NODE_IP}:8080/car-rental/api/"
+                    '''
                 sh 'echo "REACT_APP_API_URL: http://${NODE_IP}:8080/car-rental/api/"'
                 sh 'cat ./Task-3/bluerentalcars-frontend/.env'
                 sh 'docker build --force-rm -t "$ECR_REGISTRY/$APP_REPO_NAME:postgre" -f ./Task-3/postgresql/Dockerfile .'
