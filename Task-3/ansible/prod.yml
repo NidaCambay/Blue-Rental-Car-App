@@ -1,6 +1,7 @@
 - name: install docker, docker compose and application deploy.
   hosts: _prod_server
   become: true
+  remote_user: ec2-user
   vars: 
     aws_region: us-east-1
     aws_account_id: ""
