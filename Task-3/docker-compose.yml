@@ -32,7 +32,7 @@ services:
             SPRING_DATASOURCE_USERNAME: techprodb_user
             SPRING_DATASOURCE_PASSWORD: password
         depends_on:
-            - postgre
+            - database
         ports:
             - "8080:8080"
         networks:
