@@ -33,7 +33,6 @@ data "aws_ami" "al2023" {
 resource "aws_instance" "devops_project_instance" {
   ami= terraform.workspace != "default" ? lookup(var.myami, terraform.workspace) : data.aws_ami.al2023.id
   instance_type = var.ec2_type
-  count = var.num_of_instance
   iam_instance_profile = "devops-project-profile-techpro"
   key_name = var.ec2_key
   vpc_security_group_ids = [aws_security_group.devops-project-sgr.id]

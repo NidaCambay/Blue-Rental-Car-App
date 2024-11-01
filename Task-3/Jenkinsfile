@@ -69,7 +69,9 @@ pipeline {
                 echo 'Building App Image'
                 script {
                     NODE_IP = sh(script: 'terraform output -raw public_ip', returnStdout:true).trim()
+                    echo "Public IP: ${NODE_IP}"
                 }
+                sh 'echo "Public IP: ${NODE_IP}"'
                 sh 'echo "REACT_APP_API_URL: http://${NODE_IP}:8080/car-rental/api/" >> Task-3/bluerentalcars-frontend/.env'
                 sh 'cat ./Task-3/bluerentalcars-frontend/.env'
                 sh 'docker build --force-rm -t "$ECR_REGISTRY/$APP_REPO_NAME:postgre" -f ./Task-3/postgresql/Dockerfile .'
@@ -100,7 +102,7 @@ pipeline {
                 sh """
                     export ANSIBLE_HOST_KEY_CHECKING=False
                     cd Task-3/ansible
-                    ansible-playbook -i inventory_aws_ec2.yml -e "compose_dir=${env.WORKSPACE}/Task-3/" --private-key=${WORKSPACE}/${ENVIRONMENT} ${ENVIRONMENT}.yml -vvv
+                    ansible-playbook -i inventory_aws_ec2.yml -e "compose_dir=${env.WORKSPACE}/Task-3/" --private-key=${WORKSPACE}/${ENVIRONMENT} ${ENVIRONMENT}.yml -vv
                 """
             }
         }
