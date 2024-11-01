@@ -137,3 +137,18 @@ pipeline {
         }
     }
 }
+
++ ansible-inventory -i inventory_aws_ec2.yml --graph
+[WARNING]: Unable to parse /var/lib/jenkins/workspace/BCR-
+Pipeline?????????/inventory_aws_ec2.yml as an inventory source
+[WARNING]: No inventory was parsed, only implicit localhost is available
+@all:
+  |--@ungrouped:
+[Pipeline] sh
++ export ANSIBLE_PRIVATE_KEY_FILE=prod/prod
++ ANSIBLE_PRIVATE_KEY_FILE=prod/prod
++ export ANSIBLE_HOST_KEY_CHECKING=False
++ ANSIBLE_HOST_KEY_CHECKING=False
++ cd Task-3/ansible
++ ansible-playbook -i ./inventory_aws_ec2.yml -e compose_dir=prod ./prod-playbook.yml
+ERROR! the playbook: ./prod-playbook.yml could not be found
