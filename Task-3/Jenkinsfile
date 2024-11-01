@@ -96,7 +96,7 @@ pipeline {
                 sh 'ansible --version'
                 sh 'ansible-inventory -i inventory_aws_ec2.yml --graph'
                 sh """
-                    export ANSIBLE_PRIVATE_KEY_FILE="${ENVIRONMENT}/${ANS_KEYPAIR}"
+                    export ANSIBLE_PRIVATE_KEY_FILE="${ANS_KEYPAIR}"
                     export ANSIBLE_HOST_KEY_CHECKING=False
                     cd Task-3/ansible
                     ansible-playbook -i ./inventory_aws_ec2.yml -e "compose_dir=${params.ENVIRONMENT}" ./prod-playbook.yml
