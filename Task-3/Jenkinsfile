@@ -94,11 +94,11 @@ pipeline {
                 echo 'Deploy the App'
                 sh 'ls -l'
                 sh 'ansible --version'
-                sh 'ansible-inventory -i Task-3/ansible/inventory_aws_ec2.yml --graph'
+                sh 'ansible-inventory -i ./Task-3/ansible/inventory_aws_ec2.yml --graph'
                 sh """
-                    export ANSIBLE_PRIVATE_KEY_FILE="var/lib/jenkins/workspace/${ANS_KEYPAIR}.pem"
                     export ANSIBLE_HOST_KEY_CHECKING=False
-                    ansible-playbook -i ./Task-3/ansible/inventory_aws_ec2.yml -e "compose_dir=${params.ENVIRONMENT}" ./Task-3/ansible/prod-playbook.yml
+                    cd Task-3/ansible
+                    ansible-playbook -i inventory_aws_ec2.yml --private-key=${WORKSPACE}/${ENVIRONMENT} ${ENVIRONMENT}.yml -vv
                 """
             }
         }
