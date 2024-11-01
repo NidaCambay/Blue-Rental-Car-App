@@ -3,6 +3,7 @@ pipeline {
     parameters {
         choice(name: 'ENVIRONMENT', choices: ['default', 'test', 'dev', 'staging', 'prod'], description: 'Select the target environment')
         string(name: 'INSTANCE_TYPE', defaultValue: 't2.micro', description: 'AWS EC2 instance type')
+        string(name: 'INSTANCE_COUNT', defaultValue: '1', description: 'Number of instances to deploy, must be a positive number')
     }
     environment {
         PATH=sh(script:"echo $PATH:/usr/local/bin", returnStdout:true).trim()
