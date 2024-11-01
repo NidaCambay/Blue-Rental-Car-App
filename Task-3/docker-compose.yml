@@ -11,7 +11,7 @@ services:
         ports:
             - "5432:5432"
         volumes:
-            - brcvol:/var/lib/postgresql/data
+            - bcrvol:/var/lib/postgresql/data
     frontend:
         image: "058264318400.dkr.ecr.us-east-1.amazonaws.com/ecr-repo/brc-app:frontend"
         restart: always
