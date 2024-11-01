@@ -68,7 +68,7 @@ pipeline {
             steps {
                 echo 'Building App Image'
                 script {
-                    env.NODE_IP = sh(script: 'terraform output -raw public_ip', returnStdout:true).trim()
+                    NODE_IP = sh(script: 'terraform output -raw public_ip', returnStdout:true).trim()
                 }
                 sh 'echo "REACT_APP_API_URL: http://${NODE_IP}:8080/car-rental/api/" >> Task-3/bluerentalcars-frontend/.env'
                 sh 'cat ./Task-3/bluerentalcars-frontend/.env'

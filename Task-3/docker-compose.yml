@@ -15,8 +15,8 @@ services:
     frontend:
         image: "058264318400.dkr.ecr.us-east-1.amazonaws.com/ecr-repo/brc-app:frontend"
         restart: always
-        environment:
-            REACT_APP_API_URL: http://${NODE_IP}:8080/car-rental/api/
+        #environment:
+        #    REACT_APP_API_URL: http://${NODE_IP}:8080/car-rental/api/
         depends_on:
             - backend
             - database
