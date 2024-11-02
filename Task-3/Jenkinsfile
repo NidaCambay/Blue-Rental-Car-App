@@ -49,7 +49,7 @@ pipeline {
                 }
                 }
                 sh "echo ${NODE_IP}"
-                sh 'echo "REACT_APP_API_URL= http://${env.NODE_IP}:8080/car-rental/api/" >> Task-3/bluerentalcars-frontend/.env'
+                sh 'echo "REACT_APP_API_URL=http://${env.NODE_IP}:8080/car-rental/api/" >> Task-3/bluerentalcars-frontend/.env'
                 sh 'cat ./Task-3/bluerentalcars-frontend/.env'
             }
         }
