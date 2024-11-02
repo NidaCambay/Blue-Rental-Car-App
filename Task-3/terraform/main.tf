@@ -35,11 +35,16 @@ resource "aws_instance" "devops_project_instance" {
   instance_type = var.ec2_type
   iam_instance_profile = "devops-project-profile-techpro"
   key_name = var.ec2_key
+  root_block_device {
+    volume_size = 20
+    volume_type = "gp3"
+  }
   vpc_security_group_ids = [aws_security_group.devops-project-sgr.id]
   tags = {
     Project = "Devops-Project-Server"
     Name = "${terraform.workspace}_server"
   }
+  
 }
 
 resource "aws_security_group" "devops-project-sgr" {
