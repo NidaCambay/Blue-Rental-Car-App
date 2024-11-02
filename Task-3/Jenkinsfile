@@ -49,10 +49,20 @@ pipeline {
                 }
                 }
                 sh "echo ${NODE_IP}"
-                sh 'echo "REACT_APP_API_URL=http://${env.NODE_IP}:8080/car-rental/api/" >> Task-3/bluerentalcars-frontend/.env'
-                sh 'cat ./Task-3/bluerentalcars-frontend/.env'
             }
         }
+
+        stage('ENVSUBST UPDATE DOCKER COMPOSE') {
+            steps {
+                echo 'env update'
+                sh """
+                cd Task-3
+                envsubst < docker-compose-template.yml > docker-compose.yml
+                """
+            }
+        }
+
+
         stage('Create ECR Repo') {
             steps {
                 echo 'Creating ECR Repo for App'
@@ -67,7 +77,15 @@ pipeline {
             }
         }
 
-
+        stage('wait the instance') {
+            steps {
+                script {
+                    echo 'Waiting for the instance'
+                    id = sh(script: 'aws ec2 describe-instances --filters Name=tag-value,Values=${ENVIRONMENT}_server Name=instance-state-name,Values=running --query Reservations[*].Instances[*].[InstanceId] --output text', returnStdout:true).trim()
+                    sh 'aws ec2 wait instance-status-ok --instance-ids $id'
+                }
+            }
+        }
 
         stage('Build App Docker Image') {
             steps {
@@ -90,15 +108,7 @@ pipeline {
             }
         }
 
-        stage('wait the instance') {
-            steps {
-                script {
-                    echo 'Waiting for the instance'
-                    id = sh(script: 'aws ec2 describe-instances --filters Name=tag-value,Values=${ENVIRONMENT}_server Name=instance-state-name,Values=running --query Reservations[*].Instances[*].[InstanceId] --output text', returnStdout:true).trim()
-                    sh 'aws ec2 wait instance-status-ok --instance-ids $id'
-                }
-            }
-        }
+        
 
         stage('Deploy the App') {
             steps {
