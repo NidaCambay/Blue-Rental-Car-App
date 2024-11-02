@@ -4,7 +4,7 @@
   remote_user: ec2-user
   vars: 
     aws_region: us-east-1
-    aws_account_id: ""
+    aws_account_id: "058264318400"
     ecr_registry: "{{ aws_account_id }}.dkr.ecr.{{ aws_region }}.amazonaws.com"
   tasks:
     - name: update all packages
