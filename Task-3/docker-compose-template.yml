@@ -12,11 +12,12 @@ services:
             - "5432:5432"
         volumes:
             - bcrvol:/var/lib/postgresql/data
+
     frontend:
         image: "058264318400.dkr.ecr.us-east-1.amazonaws.com/ecr-repo/brc-app:frontend"
         restart: always
         environment:
-            REACT_APP_API_URL = http://${NODE_IP}:8080/car-rental/api/
+            REACT_APP_API_URL: "http://${NODE_IP}:8080/car-rental/api/"
         depends_on:
             - backend
             - db
@@ -24,6 +25,7 @@ services:
             - "3000:3000"
         networks:
             - bcr
+
     backend:
         image: "058264318400.dkr.ecr.us-east-1.amazonaws.com/ecr-repo/brc-app:backend"
         restart: always
@@ -44,6 +46,3 @@ networks:
 
 volumes:
     bcrvol:
-
-
-
