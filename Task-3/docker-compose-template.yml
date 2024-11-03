@@ -1,7 +1,7 @@
 version: "3.7"
 services:
     db:
-        image: "058264318400.dkr.ecr.us-east-1.amazonaws.com/ecr-repo/brc-app:postgre"
+        image: "767397694961.dkr.ecr.us-east-1.amazonaws.com/brc-app:postgre"
         environment:
             POSTGRES_USER: techprodb_user
             POSTGRES_PASSWORD: password
@@ -14,7 +14,7 @@ services:
             - bcrvol:/var/lib/postgresql/data
 
     frontend:
-        image: "058264318400.dkr.ecr.us-east-1.amazonaws.com/ecr-repo/brc-app:frontend"
+        image: "767397694961.dkr.ecr.us-east-1.amazonaws.com/brc-app:frontend"
         restart: always
         environment:
             REACT_APP_API_URL: "http://${NODE_IP}:8080/car-rental/api/"
@@ -27,7 +27,7 @@ services:
             - bcr
 
     backend:
-        image: "058264318400.dkr.ecr.us-east-1.amazonaws.com/ecr-repo/brc-app:backend"
+        image: "767397694961.dkr.ecr.us-east-1.amazonaws.com/brc-app:backend"
         restart: always
         environment:
             SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/carrental
