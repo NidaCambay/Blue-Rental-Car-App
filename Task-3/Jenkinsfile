@@ -11,7 +11,7 @@ pipeline {
         ANS_KEYPAIR="${params.ENVIRONMENT}"
         AWS_ACCOUNT_ID=sh(script:'export PATH="$PATH:/usr/local/bin" && aws sts get-caller-identity --query Account --output text', returnStdout:true).trim()
         ECR_REGISTRY="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
-        APP_REPO_NAME = "ecr-repo/brc-app"
+        APP_REPO_NAME = "brc-app"
         INSTANCE_COUNT_INT = "${params.INSTANCE_COUNT.toInteger()}"
     }
     stages {
@@ -84,6 +84,28 @@ pipeline {
                     id = sh(script: 'aws ec2 describe-instances --filters Name=tag-value,Values=${ENVIRONMENT}_server Name=instance-state-name,Values=running --query Reservations[*].Instances[*].[InstanceId] --output text', returnStdout:true).trim()
                     sh 'aws ec2 wait instance-status-ok --instance-ids $id'
                 }
+            }
+        }
+
+
+                stage('Build App Docker Image') {
+            steps {
+                echo 'Building App Image'
+                
+                sh 'docker build --force-rm -t "$ECR_REGISTRY/$APP_REPO_NAME:postgre" -f ./Task-3/postgresql/Dockerfile .'
+                sh 'docker build --force-rm -t "$ECR_REGISTRY/$APP_REPO_NAME:backend" -f ./Task-3/bluerentalcars-backend/Dockerfile .'
+                sh 'docker build --force-rm -t "$ECR_REGISTRY/$APP_REPO_NAME:frontend" -f ./Task-3/bluerentalcars-frontend/Dockerfile .'
+                sh 'docker image ls'
+            }
+        }
+
+        stage('Push Image to ECR Repo') {
+            steps {
+                echo 'Pushing App Image to ECR Repo'
+                sh 'aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin "$ECR_REGISTRY"'
+                sh 'docker push "$ECR_REGISTRY/$APP_REPO_NAME:postgre"'
+                sh 'docker push "$ECR_REGISTRY/$APP_REPO_NAME:backend"'
+                sh 'docker push "$ECR_REGISTRY/$APP_REPO_NAME:frontend"'
             }
         }
 
